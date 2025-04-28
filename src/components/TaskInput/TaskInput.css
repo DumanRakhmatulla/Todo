@@ -1,0 +1,88 @@
+.task-input-container {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.task-input-wrapper {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 6px;
+  background-color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.dark-theme .task-input-wrapper {
+  background-color: #3a3a3a;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.task-input {
+  flex: 1;
+  padding: 12px;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  outline: none;
+  transition: box-shadow 0.3s;
+}
+
+.dark-theme .task-input {
+  background-color: #2d2d2d;
+  color: #f5f5f5;
+}
+
+.task-input:focus {
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.priority-select {
+  padding: 10px;
+  font-size: 14px;
+  border: none;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+  cursor: pointer;
+  outline: none;
+}
+
+.dark-theme .priority-select {
+  background-color: #444;
+  color: #f5f5f5;
+}
+
+.add-task-btn {
+  background-color: #4caf50;
+  border: none;
+  border-radius: 4px;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s;
+}
+
+.add-task-btn:hover {
+  background-color: #43a047;
+}
+
+.add-icon {
+  width: 24px;
+  height: 24px;
+}
+
+@media (max-width: 600px) {
+  .task-input-wrapper {
+    flex-wrap: wrap;
+  }
+
+  .task-input {
+    width: 100%;
+  }
+
+  .priority-select {
+    flex: 1;
+  }
+}

@@ -30,7 +30,74 @@ function App() {
     document.body.className = darkMode ? "dark-theme" : "light-theme";
   }, [darkMode]);
 
-  const addTask = (text, priority = "medium") => {
+  // Check for approaching deadlines every minute
+  useEffect(() => {
+    const checkDeadlines = () => {
+      const now = new Date();
+
+      tasks.forEach((task) => {
+        if (task.deadline && !task.completed && !task.notificationSent) {
+          const deadlineDate = new Date(task.deadline);
+          const timeRemaining = deadlineDate - now;
+
+          // If deadline is within 1 hour (3600000 ms)
+          if (timeRemaining > 0 && timeRemaining <= 3600000) {
+            // Send email notification
+            sendDeadlineNotification(task);
+
+            // Mark notification as sent to avoid duplicate emails
+            setTasks((prevTasks) =>
+              prevTasks.map((t) =>
+                t.id === task.id ? { ...t, notificationSent: true } : t
+              )
+            );
+          }
+        }
+      });
+    };
+
+    // Initial check
+    checkDeadlines();
+
+    // Set interval to check deadlines every minute
+    const intervalId = setInterval(checkDeadlines, 60000);
+
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId);
+  }, [tasks]);
+
+  const sendDeadlineNotification = async (task) => {
+    try {
+      // In a real implementation, you would use a backend API to send emails
+      // For this example, we'll simulate sending an email
+      console.log(`Sending deadline notification for task: ${task.text}`);
+
+      // Here you would typically make an API call to your backend service
+      // Example:
+      await fetch("http://localhost:3001/send-notification", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: "rakhmatulladuman0505@gmai.com",
+          subject: "Task Deadline Approaching",
+          message: `Your task "${
+            task.text
+          }" is due in less than an hour (Deadline: ${new Date(
+            task.deadline
+          ).toLocaleString()})`,
+        }),
+      });
+
+      // Note: In a real implementation, you would need a backend service to handle emails
+      // as browsers cannot send emails directly from JavaScript for security reasons
+    } catch (error) {
+      console.error("Failed to send notification:", error);
+    }
+  };
+
+  const addTask = (text, priority = "medium", deadline = "") => {
     if (text.trim() === "") return;
     setTasks([
       ...tasks,
@@ -40,15 +107,25 @@ function App() {
         completed: false,
         priority,
         createdAt: new Date().toISOString(),
+        deadline: deadline || null,
+        notificationSent: false,
       },
     ]);
   };
 
-  const editTask = (id, newText, newPriority) => {
+  const editTask = (id, newText, newPriority, newDeadline) => {
     setTasks(
       tasks.map((task) =>
         task.id === id
-          ? { ...task, text: newText, priority: newPriority }
+          ? {
+              ...task,
+              text: newText,
+              priority: newPriority,
+              deadline: newDeadline || task.deadline,
+              // Reset notification status if deadline changes
+              notificationSent:
+                newDeadline !== task.deadline ? false : task.notificationSent,
+            }
           : task
       )
     );
@@ -68,6 +145,15 @@ function App() {
 
   const toggleTheme = () => {
     setDarkMode(!darkMode);
+  };
+
+  // Function to check if deadline is approaching (less than 24 hours)
+  const isDeadlineApproaching = (deadline) => {
+    if (!deadline) return false;
+    const now = new Date();
+    const deadlineDate = new Date(deadline);
+    const timeRemaining = deadlineDate - now;
+    return timeRemaining > 0 && timeRemaining <= 86400000; // 24 hours in milliseconds
   };
 
   // Filter tasks based on current filter and search query
@@ -119,6 +205,7 @@ function App() {
           toggleCompletion={toggleCompletion}
           deleteTask={deleteTask}
           editTask={editTask}
+          isDeadlineApproaching={isDeadlineApproaching}
         />
         <div className="task-stats">
           <p>

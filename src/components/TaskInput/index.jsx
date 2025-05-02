@@ -1,3 +1,4 @@
+// src/components/TaskInput/index.jsx
 import { useState } from "react";
 import "./TaskInput.css";
 import { AddIcon } from "../Icons";
@@ -5,13 +6,15 @@ import { AddIcon } from "../Icons";
 function TaskInput({ onAddTask }) {
   const [newTask, setNewTask] = useState("");
   const [priority, setPriority] = useState("medium");
+  const [deadline, setDeadline] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (newTask.trim() !== "") {
-      onAddTask(newTask, priority);
+      onAddTask(newTask, priority, deadline);
       setNewTask("");
       setPriority("medium");
+      setDeadline("");
     }
   };
 
@@ -34,6 +37,13 @@ function TaskInput({ onAddTask }) {
           <option value="medium">Medium Priority</option>
           <option value="high">High Priority</option>
         </select>
+        <input
+          type="datetime-local"
+          value={deadline}
+          onChange={(e) => setDeadline(e.target.value)}
+          className="deadline-input"
+          placeholder="Set deadline"
+        />
         <button type="submit" className="add-task-btn">
           <AddIcon />
         </button>

@@ -2,15 +2,23 @@ import { useState } from "react";
 import "./TaskList.css";
 import { DeleteIcon, EditIcon, SaveIcon, CancelIcon } from "../Icons";
 
-function TaskList({ tasks, toggleCompletion, deleteTask, editTask }) {
+function TaskList({
+  tasks,
+  toggleCompletion,
+  deleteTask,
+  editTask,
+  isDeadlineApproaching,
+}) {
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState("");
   const [editPriority, setEditPriority] = useState("medium");
+  const [editDeadline, setEditDeadline] = useState("");
 
   const startEditing = (task) => {
     setEditingId(task.id);
     setEditText(task.text);
     setEditPriority(task.priority || "medium");
+    setEditDeadline(task.deadline || "");
   };
 
   const cancelEditing = () => {
@@ -18,7 +26,7 @@ function TaskList({ tasks, toggleCompletion, deleteTask, editTask }) {
   };
 
   const saveEdit = (id) => {
-    editTask(id, editText, editPriority);
+    editTask(id, editText, editPriority, editDeadline);
     setEditingId(null);
   };
 
@@ -33,6 +41,14 @@ function TaskList({ tasks, toggleCompletion, deleteTask, editTask }) {
     }).format(date);
   };
 
+  const isDeadlineNear = (deadline) => {
+    if (!deadline) return false;
+    const now = new Date();
+    const deadlineDate = new Date(deadline);
+    const timeRemaining = deadlineDate - now;
+    return timeRemaining > 0 && timeRemaining <= 10800000; // 3 hours in milliseconds
+  };
+
   if (tasks.length === 0) {
     return <div className="no-tasks">No tasks to display</div>;
   }
@@ -42,9 +58,18 @@ function TaskList({ tasks, toggleCompletion, deleteTask, editTask }) {
       {tasks.map((task) => (
         <li
           key={task.id}
-          className={`task-item ${task.completed ? "completed" : ""} priority-${
-            task.priority || "medium"
-          }`}
+          className={`task-item ${task.completed ? "completed" : ""} 
+                      priority-${task.priority || "medium"}
+                      ${
+                        task.deadline && isDeadlineNear(task.deadline)
+                          ? "deadline-urgent"
+                          : ""
+                      }
+                      ${
+                        task.deadline && isDeadlineApproaching(task.deadline)
+                          ? "deadline-approaching"
+                          : ""
+                      }`}
         >
           {editingId === task.id ? (
             // Edit mode
@@ -65,6 +90,12 @@ function TaskList({ tasks, toggleCompletion, deleteTask, editTask }) {
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
               </select>
+              <input
+                type="datetime-local"
+                value={editDeadline}
+                onChange={(e) => setEditDeadline(e.target.value)}
+                className="edit-deadline"
+              />
               <div className="edit-actions">
                 <button className="save-btn" onClick={() => saveEdit(task.id)}>
                   <SaveIcon />
@@ -89,6 +120,15 @@ function TaskList({ tasks, toggleCompletion, deleteTask, editTask }) {
                   {task.createdAt && (
                     <span className="task-date">
                       Created: {formatDate(task.createdAt)}
+                    </span>
+                  )}
+                  {task.deadline && (
+                    <span
+                      className={`task-deadline ${
+                        isDeadlineNear(task.deadline) ? "deadline-near" : ""
+                      }`}
+                    >
+                      Deadline: {formatDate(task.deadline)}
                     </span>
                   )}
                   <span

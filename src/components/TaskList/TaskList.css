@@ -249,3 +249,74 @@
     flex-wrap: wrap;
   }
 }
+
+.task-deadline {
+  font-size: 12px;
+  color: #666;
+}
+
+.dark-theme .task-deadline {
+  color: #aaa;
+}
+
+.deadline-near {
+  color: #f44336;
+  font-weight: bold;
+}
+
+.dark-theme .deadline-near {
+  color: #ff6b6b;
+}
+
+/* Add these to src/components/TaskList/TaskList.css */
+
+.task-deadline {
+  font-size: 12px;
+  color: #666;
+  display: block;
+}
+
+.dark-theme .task-deadline {
+  color: #aaa;
+}
+
+.deadline-near {
+  color: #f44336;
+  font-weight: bold;
+}
+
+.dark-theme .deadline-near {
+  color: #ff6b6b;
+}
+
+.deadline-urgent {
+  animation: pulse 2s infinite;
+}
+
+.deadline-approaching {
+  border-left-color: #ff9800 !important;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 5px rgba(255, 0, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
+  }
+}
+
+.edit-deadline {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.dark-theme .edit-deadline {
+  background-color: #2d2d2d;
+  border-color: #444;
+  color: #f5f5f5;
+}

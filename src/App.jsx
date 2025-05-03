@@ -7,28 +7,50 @@ import FilterButtons from "./components/FilterButtons";
 import SearchBar from "./components/SearchBar";
 import ThemeToggle from "./components/ThemeToggle";
 import Auth from "./components/Auth";
-import UserMenu from "./components/UserMenu"; // Жаңа импорт
+import UserMenu from "./components/UserMenu";
+import { auth, db } from "./firebase/config";
+import { onAuthStateChanged } from "firebase/auth";
+import { 
+  collection, 
+  query, 
+  where, 
+  onSnapshot, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  doc, 
+  serverTimestamp 
+} from "firebase/firestore";
 
 function App() {
-  const [tasks, setTasks] = useState(() => {
-    const savedTasks = localStorage.getItem("tasks");
-    return savedTasks ? JSON.parse(savedTasks) : [];
-  });
+  const [tasks, setTasks] = useState([]);
   const [filter, setFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [darkMode, setDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem("theme");
     return savedTheme === "dark";
   });
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem("user");
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Save tasks to localStorage whenever they change
+  // Listen for authentication state changes
   useEffect(() => {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-  }, [tasks]);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser({
+          uid: currentUser.uid,
+          email: currentUser.email,
+          displayName: currentUser.displayName || currentUser.email.split("@")[0],
+          photoURL: currentUser.photoURL,
+        });
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // Save theme preference to localStorage
   useEffect(() => {
@@ -36,7 +58,31 @@ function App() {
     document.body.className = darkMode ? "dark-theme" : "light-theme";
   }, [darkMode]);
 
+  // Subscribe to tasks from Firestore when user is authenticated
   useEffect(() => {
+    if (!user) {
+      setTasks([]);
+      return;
+    }
+
+    const tasksRef = collection(db, "tasks");
+    const q = query(tasksRef, where("userId", "==", user.uid));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const taskList = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setTasks(taskList);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
+
+  // Check for tasks with approaching deadlines
+  useEffect(() => {
+    if (!user || tasks.length === 0) return;
+
     const checkDeadlines = () => {
       const now = new Date();
 
@@ -47,15 +93,11 @@ function App() {
 
           // If deadline is within 1 hour (3600000 ms)
           if (timeRemaining > 0 && timeRemaining <= 3600000) {
-            // Send email notification
+            // Mark notification as sent
+            updateTask(task.id, { notificationSent: true });
+            
+            // Send notification (in a real app, this would connect to a backend)
             sendDeadlineNotification(task);
-
-            // Mark notification as sent to avoid duplicate emails
-            setTasks((prevTasks) =>
-              prevTasks.map((t) =>
-                t.id === task.id ? { ...t, notificationSent: true } : t
-              )
-            );
           }
         }
       });
@@ -69,83 +111,93 @@ function App() {
 
     // Clean up interval on component unmount
     return () => clearInterval(intervalId);
-  }, [tasks]);
+  }, [tasks, user]);
 
   const sendDeadlineNotification = async (task) => {
     try {
-      // In a real implementation, you would use a backend API to send emails
-      // For this example, we'll simulate sending an email
       console.log(`Sending deadline notification for task: ${task.text}`);
-
-      // Here you would typically make an API call to your backend service
-      // Example:
-      await fetch("http://localhost:3001/send-notification", {
+      
+      // In a real implementation, you would call a Cloud Function
+      // For example:
+      /*
+      await fetch("https://your-cloud-function-url.com/send-notification", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${await auth.currentUser.getIdToken()}`
         },
         body: JSON.stringify({
-          email: user?.email || "rakhmatulladuman0505@gmai.com", // Use logged in user's email
-          subject: "Task Deadline Approaching",
-          message: `Your task "${
-            task.text
-          }" is due in less than an hour (Deadline: ${new Date(
-            task.deadline
-          ).toLocaleString()})`,
+          taskId: task.id,
+          taskText: task.text,
+          deadline: task.deadline
         }),
       });
-
-      // Note: In a real implementation, you would need a backend service to handle emails
-      // as browsers cannot send emails directly from JavaScript for security reasons
+      */
     } catch (error) {
       console.error("Failed to send notification:", error);
     }
   };
 
-  const addTask = (text, priority = "medium", deadline = "") => {
-    if (text.trim() === "") return;
-    setTasks([
-      ...tasks,
-      {
-        id: Date.now(),
+  const addTask = async (text, priority = "medium", deadline = "") => {
+    if (!user || text.trim() === "") return;
+    
+    try {
+      await addDoc(collection(db, "tasks"), {
         text,
         completed: false,
         priority,
-        createdAt: new Date().toISOString(),
+        createdAt: serverTimestamp(),
         deadline: deadline || null,
         notificationSent: false,
-      },
-    ]);
+        userId: user.uid,
+      });
+    } catch (error) {
+      console.error("Error adding task:", error);
+    }
   };
 
-  const editTask = (id, newText, newPriority, newDeadline) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id
-          ? {
-              ...task,
-              text: newText,
-              priority: newPriority,
-              deadline: newDeadline || task.deadline,
-              // Reset notification status if deadline changes
-              notificationSent:
-                newDeadline !== task.deadline ? false : task.notificationSent,
-            }
-          : task
-      )
-    );
+  const updateTask = async (id, updatedFields) => {
+    if (!user) return;
+    
+    try {
+      const taskRef = doc(db, "tasks", id);
+      await updateDoc(taskRef, updatedFields);
+    } catch (error) {
+      console.error("Error updating task:", error);
+    }
   };
 
-  const toggleCompletion = (id) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
+  const editTask = async (id, newText, newPriority, newDeadline) => {
+    // Reset notification status if deadline changes
+    const taskToUpdate = tasks.find(task => task.id === id);
+    const notificationSent = newDeadline !== taskToUpdate?.deadline 
+      ? false 
+      : taskToUpdate?.notificationSent;
+    
+    await updateTask(id, {
+      text: newText,
+      priority: newPriority,
+      deadline: newDeadline || null,
+      notificationSent
+    });
   };
 
-  const deleteTask = (id) => {
-    setTasks(tasks.filter((task) => task.id !== id));
+  const toggleCompletion = async (id) => {
+    const task = tasks.find(task => task.id === id);
+    if (!task) return;
+    
+    await updateTask(id, { completed: !task.completed });
+  };
+
+  const deleteTask = async (id) => {
+    if (!user) return;
+    
+    try {
+      const taskRef = doc(db, "tasks", id);
+      await deleteDoc(taskRef);
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
   };
 
   const toggleTheme = () => {
@@ -154,12 +206,15 @@ function App() {
 
   const handleLogin = (userData) => {
     setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    setUser(null);
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      setUser(null);
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   };
 
   const isDeadlineApproaching = (deadline) => {
@@ -192,9 +247,31 @@ function App() {
     return filteredTasks;
   };
 
-  const clearCompleted = () => {
-    setTasks(tasks.filter((task) => !task.completed));
+  const clearCompleted = async () => {
+    if (!user) return;
+    
+    const completedTasks = tasks.filter(task => task.completed);
+    
+    try {
+      // Delete each completed task
+      for (const task of completedTasks) {
+        await deleteTask(task.id);
+      }
+    } catch (error) {
+      console.error("Error clearing completed tasks:", error);
+    }
   };
+
+  // Show loading indicator while checking authentication
+  if (loading) {
+    return (
+      <div className={`App ${darkMode ? "dark-mode" : ""}`}>
+        <div className="app-container">
+          <div className="loading-spinner">Loading...</div>
+        </div>
+      </div>
+    );
+  }
 
   // If user is not logged in, show Auth component
   if (!user) {

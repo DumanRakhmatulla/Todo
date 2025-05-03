@@ -6,6 +6,7 @@ import TaskList from "./components/TaskList";
 import FilterButtons from "./components/FilterButtons";
 import SearchBar from "./components/SearchBar";
 import ThemeToggle from "./components/ThemeToggle";
+import Auth from "./components/Auth";
 
 function App() {
   const [tasks, setTasks] = useState(() => {
@@ -17,6 +18,10 @@ function App() {
   const [darkMode, setDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem("theme");
     return savedTheme === "dark";
+  });
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem("user");
+    return savedUser ? JSON.parse(savedUser) : null;
   });
 
   // Save tasks to localStorage whenever they change
@@ -79,7 +84,7 @@ function App() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: "rakhmatulladuman0505@gmail.com",
+          email: user?.email || "rakhmatulladuman0505@gmai.com", // Use logged in user's email
           subject: "Task Deadline Approaching",
           message: `Your task "${
             task.text
@@ -146,6 +151,15 @@ function App() {
     setDarkMode(!darkMode);
   };
 
+  const handleLogin = (userData) => {
+    setUser(userData);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+  };
+
   const isDeadlineApproaching = (deadline) => {
     if (!deadline) return false;
     const now = new Date();
@@ -179,6 +193,17 @@ function App() {
   const clearCompleted = () => {
     setTasks(tasks.filter((task) => !task.completed));
   };
+
+  // If user is not logged in, show Auth component
+  if (!user) {
+    return (
+      <Auth
+        onLogin={handleLogin}
+        darkMode={darkMode}
+        toggleTheme={toggleTheme}
+      />
+    );
+  }
 
   return (
     <div className={`App ${darkMode ? "dark-mode" : ""}`}>

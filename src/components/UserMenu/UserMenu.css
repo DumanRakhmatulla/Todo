@@ -1,0 +1,141 @@
+.user-menu {
+  position: relative;
+  display: inline-block;
+  margin-left: auto;
+  z-index: 100;
+}
+
+.user-menu-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 5px 15px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.user-menu-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dark-theme .user-menu-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.user-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #4c97ff;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.user-menu-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 200px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 10px 0;
+  margin-top: 10px;
+  z-index: 100;
+}
+
+.dark-theme .user-menu-dropdown {
+  background-color: #2d2d2d;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dropdown-arrow {
+  position: absolute;
+  top: -8px;
+  right: 20px;
+  width: 16px;
+  height: 16px;
+  background-color: white;
+  transform: rotate(45deg);
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.dark-theme .dropdown-arrow {
+  background-color: #2d2d2d;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.user-info {
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 5px;
+}
+
+.user-name {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.user-email {
+  font-size: 14px;
+  color: var(--text-color-light);
+  word-break: break-all;
+}
+
+.menu-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu-item {
+  padding: 8px 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.menu-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dark-theme .menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.menu-item.danger {
+  color: var(--danger-color);
+}
+
+.item-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--text-color-light);
+}
+
+.menu-item.danger .item-icon {
+  color: var(--danger-color);
+}
+
+@media (max-width: 600px) {
+  .user-menu-button {
+    padding: 5px 10px;
+  }
+
+  .user-avatar {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+}

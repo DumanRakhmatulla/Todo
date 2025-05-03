@@ -118,7 +118,7 @@ const Auth = ({ onLogin, darkMode, toggleTheme }) => {
         </div>
 
         <div className="or-separator">
-          <span>немесе</span>
+          <span>or</span>
         </div>
 
         <button
@@ -126,7 +126,7 @@ const Auth = ({ onLogin, darkMode, toggleTheme }) => {
           className="google-button"
           disabled={loading}
         >
-          Google арқылы кіру
+          Sign in with Google
         </button>
 
         <div className="auth-footer">

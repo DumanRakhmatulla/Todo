@@ -7,6 +7,7 @@ import FilterButtons from "./components/FilterButtons";
 import SearchBar from "./components/SearchBar";
 import ThemeToggle from "./components/ThemeToggle";
 import Auth from "./components/Auth";
+import UserMenu from "./components/UserMenu"; // Жаңа импорт
 
 function App() {
   const [tasks, setTasks] = useState(() => {
@@ -153,6 +154,7 @@ function App() {
 
   const handleLogin = (userData) => {
     setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
   };
 
   const handleLogout = () => {
@@ -208,8 +210,14 @@ function App() {
   return (
     <div className={`App ${darkMode ? "dark-mode" : ""}`}>
       <div className="app-container">
-        <Header />
-        <ThemeToggle darkMode={darkMode} toggleTheme={toggleTheme} />
+        <div className="app-header-bar">
+          <Header />
+          <div className="header-controls">
+            <UserMenu user={user} onLogout={handleLogout} />
+            <ThemeToggle darkMode={darkMode} toggleTheme={toggleTheme} />
+          </div>
+        </div>
+
         <div className="app-controls">
           <TaskInput onAddTask={addTask} />
           <SearchBar

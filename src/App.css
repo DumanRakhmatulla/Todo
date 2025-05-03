@@ -36,6 +36,21 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
+/* Жаңа стильдер - Header мен басқару элементтерін орналастыру */
+.app-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
 .app-controls {
   display: flex;
   gap: 15px;
@@ -68,5 +83,15 @@ body {
 
   .app-controls {
     flex-direction: column;
+  }
+
+  .app-header-bar {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .header-controls {
+    width: 100%;
+    justify-content: space-between;
   }
 }

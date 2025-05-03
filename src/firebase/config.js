@@ -4,12 +4,13 @@ import { getFirestore } from 'firebase/firestore';
 
 // Your Firebase configuration
 const firebaseConfig = {
-    apiKey: process.env.VITE_FIREBASE_API_KEY,
-    authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.VITE_FIREBASE_APP_ID
+    apiKey: "AIzaSyArOmpZoH1q0tJNjVjFZtRDWHE8oF-Qitc",
+    authDomain: "daily-task-planner-81916.firebaseapp.com",
+    projectId: "daily-task-planner-81916",
+    storageBucket: "daily-task-planner-81916.firebasestorage.app",
+    messagingSenderId: "605948233174",
+    appId: "1:605948233174:web:9704809c48a0d7fefd5077",
+    measurementId: "G-4FQ5S78SBV"
   };
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);

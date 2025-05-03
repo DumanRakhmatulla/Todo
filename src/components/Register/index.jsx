@@ -1,0 +1,158 @@
+import { useState } from "react";
+import "./Register.css";
+
+function Register({ onRegister, onSwitchToLogin }) {
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [errors, setErrors] = useState({});
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors({
+        ...errors,
+        [name]: "",
+      });
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    // Username validation
+    if (!formData.username.trim()) {
+      newErrors.username = "Пайдаланушы аты міндетті";
+    } else if (formData.username.length < 3) {
+      newErrors.username = "Пайдаланушы аты кем дегенде 3 таңбадан тұруы керек";
+    }
+
+    // Email validation
+    if (!formData.email.trim()) {
+      newErrors.email = "Email міндетті";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Жарамды email енгізіңіз";
+    }
+
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = "Құпия сөз міндетті";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Құпия сөз кем дегенде 6 таңбадан тұруы керек";
+    }
+
+    // Confirm password validation
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Құпия сөздер сәйкес келмейді";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (validateForm()) {
+      // Call the register function passed from parent
+      onRegister({
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+      });
+    }
+  };
+
+  return (
+    <div className="register-container">
+      <div className="register-header">
+        <h2>Тіркелу</h2>
+        <p>Біздің қолданбаға тіркеліңіз</p>
+      </div>
+
+      <form className="register-form" onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label htmlFor="username">Пайдаланушы аты</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            className={errors.username ? "input-error" : ""}
+          />
+          {errors.username && (
+            <p className="error-message">{errors.username}</p>
+          )}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            className={errors.email ? "input-error" : ""}
+          />
+          {errors.email && <p className="error-message">{errors.email}</p>}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="password">Құпия сөз</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            className={errors.password ? "input-error" : ""}
+          />
+          {errors.password && (
+            <p className="error-message">{errors.password}</p>
+          )}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="confirmPassword">Құпия сөзді қайталаңыз</label>
+          <input
+            type="password"
+            id="confirmPassword"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            className={errors.confirmPassword ? "input-error" : ""}
+          />
+          {errors.confirmPassword && (
+            <p className="error-message">{errors.confirmPassword}</p>
+          )}
+        </div>
+
+        <button type="submit" className="register-button">
+          Тіркелу
+        </button>
+      </form>
+
+      <div className="auth-switch">
+        <p>
+          Аккаунтыңыз бар ма?{" "}
+          <button className="switch-button" onClick={onSwitchToLogin}>
+            Кіру
+          </button>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default Register;

@@ -79,7 +79,7 @@ function App() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: "rakhmatulladuman0505@gmai.com",
+          email: "rakhmatulladuman0505@gmail.com",
           subject: "Task Deadline Approaching",
           message: `Your task "${
             task.text

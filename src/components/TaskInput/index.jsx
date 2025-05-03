@@ -10,10 +10,15 @@ function TaskInput({ onAddTask }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (newTask.trim() !== "") {
-      onAddTask(newTask, priority, deadline);
+      // Вызываем функцию добавления задачи, передавая текст, приоритет и дедлайн
+      onAddTask(newTask.trim(), priority, deadline);
+      
+      // Очищаем форму после добавления
       setNewTask("");
       setPriority("medium");
       setDeadline("");
+      
+      console.log("Task submitted:", { newTask, priority, deadline });
     }
   };
 
@@ -41,7 +46,6 @@ function TaskInput({ onAddTask }) {
           value={deadline}
           onChange={(e) => setDeadline(e.target.value)}
           className="deadline-input"
-          placeholder="Set deadline"
         />
         <button type="submit" className="add-task-btn">
           <AddIcon />

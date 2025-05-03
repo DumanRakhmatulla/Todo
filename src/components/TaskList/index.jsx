@@ -31,14 +31,42 @@ function TaskList({
   };
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(date);
+    if (!dateString) return "";
+    
+    try {
+      // Handle different date formats
+      let date;
+      
+      if (dateString instanceof Date) {
+        date = dateString;
+      } else if (typeof dateString === 'object' && dateString.seconds) {
+        // Handle Firestore Timestamp object
+        date = new Date(dateString.seconds * 1000);
+      } else {
+        // Handle string date format
+        date = new Date(dateString);
+      }
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        console.error("Invalid date:", dateString);
+        return "Invalid date";
+      }
+      
+      // Format the date
+      const options = { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      };
+      
+      return date.toLocaleDateString('en-US', options);
+    } catch (error) {
+      console.error("Error formatting date:", error, dateString);
+      return "Date error";
+    }
   };
 
   const isDeadlineNear = (deadline) => {
@@ -49,7 +77,7 @@ function TaskList({
     return timeRemaining > 0 && timeRemaining <= 10800000; // 3 hours in milliseconds
   };
 
-  if (tasks.length === 0) {
+  if (!tasks || tasks.length === 0) {
     return <div className="no-tasks">No tasks to display</div>;
   }
 

@@ -17,7 +17,6 @@ function Register({ onRegister, onSwitchToLogin }) {
       [name]: value,
     });
 
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors({
         ...errors,
@@ -29,30 +28,24 @@ function Register({ onRegister, onSwitchToLogin }) {
   const validateForm = () => {
     const newErrors = {};
 
-    // Username validation
     if (!formData.username.trim()) {
-      newErrors.username = "Пайдаланушы аты міндетті";
+      newErrors.username = "Username is required";
     } else if (formData.username.length < 3) {
-      newErrors.username = "Пайдаланушы аты кем дегенде 3 таңбадан тұруы керек";
+      newErrors.username = "Username must be at least 3 characters long";
     }
 
-    // Email validation
     if (!formData.email.trim()) {
-      newErrors.email = "Email міндетті";
+      newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Жарамды email енгізіңіз";
+      newErrors.email = "Please enter a valid email address";
     }
-
-    // Password validation
     if (!formData.password) {
-      newErrors.password = "Құпия сөз міндетті";
+      newErrors.password = "Password is required";
     } else if (formData.password.length < 6) {
-      newErrors.password = "Құпия сөз кем дегенде 6 таңбадан тұруы керек";
+      newErrors.password = "Password must be at least 6 characters long";
     }
-
-    // Confirm password validation
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Құпия сөздер сәйкес келмейді";
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
     setErrors(newErrors);
@@ -63,7 +56,6 @@ function Register({ onRegister, onSwitchToLogin }) {
     e.preventDefault();
 
     if (validateForm()) {
-      // Call the register function passed from parent
       onRegister({
         username: formData.username,
         email: formData.email,
@@ -75,13 +67,13 @@ function Register({ onRegister, onSwitchToLogin }) {
   return (
     <div className="register-container">
       <div className="register-header">
-        <h2>Тіркелу</h2>
-        <p>Біздің қолданбаға тіркеліңіз</p>
+        <h2>Register</h2>
+        <p>Sign up for our application</p>
       </div>
 
       <form className="register-form" onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="username">Пайдаланушы аты</label>
+          <label htmlFor="username">Username</label>
           <input
             type="text"
             id="username"
@@ -109,7 +101,7 @@ function Register({ onRegister, onSwitchToLogin }) {
         </div>
 
         <div className="form-group">
-          <label htmlFor="password">Құпия сөз</label>
+          <label htmlFor="password">Password</label>
           <input
             type="password"
             id="password"
@@ -124,7 +116,7 @@ function Register({ onRegister, onSwitchToLogin }) {
         </div>
 
         <div className="form-group">
-          <label htmlFor="confirmPassword">Құпия сөзді қайталаңыз</label>
+          <label htmlFor="confirmPassword">Confirm Password</label>
           <input
             type="password"
             id="confirmPassword"
@@ -145,9 +137,9 @@ function Register({ onRegister, onSwitchToLogin }) {
 
       <div className="auth-switch">
         <p>
-          Аккаунтыңыз бар ма?{" "}
+          Already have an account?{" "}
           <button className="switch-button" onClick={onSwitchToLogin}>
-            Кіру
+            Login
           </button>
         </p>
       </div>

@@ -10,37 +10,42 @@ import Auth from "./components/Auth";
 import UserMenu from "./components/UserMenu";
 import { auth, db } from "./firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
-import { 
-  collection, 
-  query, 
-  where, 
-  onSnapshot, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  doc, 
-  serverTimestamp 
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  serverTimestamp,
 } from "firebase/firestore";
 
 function App() {
   const [tasks, setTasks] = useState([]);
   const [filter, setFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [darkMode, setDarkMode] = useState(() => {
-    const savedTheme = localStorage.getItem("theme");
-    return savedTheme === "dark";
-  });
+  const [darkMode, setDarkMode] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Listen for authentication state changes
+  // Проверка темы из localStorage и состояния аутентификации
   useEffect(() => {
+    // Проверка темы из localStorage
+    const savedTheme = localStorage.getItem("darkMode");
+    if (savedTheme) {
+      setDarkMode(JSON.parse(savedTheme));
+    }
+
+    // Проверка состояния аутентификации
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser({
           uid: currentUser.uid,
           email: currentUser.email,
-          displayName: currentUser.displayName || currentUser.email.split("@")[0],
+          displayName:
+            currentUser.displayName || currentUser.email.split("@")[0],
           photoURL: currentUser.photoURL,
         });
       } else {
@@ -54,7 +59,7 @@ function App() {
 
   // Save theme preference to localStorage
   useEffect(() => {
-    localStorage.setItem("theme", darkMode ? "dark" : "light");
+    localStorage.setItem("darkMode", JSON.stringify(darkMode));
     document.body.className = darkMode ? "dark-theme" : "light-theme";
   }, [darkMode]);
 
@@ -69,7 +74,7 @@ function App() {
     const q = query(tasksRef, where("userId", "==", user.uid));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const taskList = snapshot.docs.map(doc => ({
+      const taskList = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
@@ -95,7 +100,7 @@ function App() {
           if (timeRemaining > 0 && timeRemaining <= 3600000) {
             // Mark notification as sent
             updateTask(task.id, { notificationSent: true });
-            
+
             // Send notification (in a real app, this would connect to a backend)
             sendDeadlineNotification(task);
           }
@@ -116,7 +121,7 @@ function App() {
   const sendDeadlineNotification = async (task) => {
     try {
       console.log(`Sending deadline notification for task: ${task.text}`);
-      
+
       // In a real implementation, you would call a Cloud Function
       // For example:
       /*
@@ -140,7 +145,7 @@ function App() {
 
   const addTask = async (text, priority = "medium", deadline = "") => {
     if (!user || text.trim() === "") return;
-    
+
     try {
       await addDoc(collection(db, "tasks"), {
         text,
@@ -158,7 +163,7 @@ function App() {
 
   const updateTask = async (id, updatedFields) => {
     if (!user) return;
-    
+
     try {
       const taskRef = doc(db, "tasks", id);
       await updateDoc(taskRef, updatedFields);
@@ -169,29 +174,30 @@ function App() {
 
   const editTask = async (id, newText, newPriority, newDeadline) => {
     // Reset notification status if deadline changes
-    const taskToUpdate = tasks.find(task => task.id === id);
-    const notificationSent = newDeadline !== taskToUpdate?.deadline 
-      ? false 
-      : taskToUpdate?.notificationSent;
-    
+    const taskToUpdate = tasks.find((task) => task.id === id);
+    const notificationSent =
+      newDeadline !== taskToUpdate?.deadline
+        ? false
+        : taskToUpdate?.notificationSent;
+
     await updateTask(id, {
       text: newText,
       priority: newPriority,
       deadline: newDeadline || null,
-      notificationSent
+      notificationSent,
     });
   };
 
   const toggleCompletion = async (id) => {
-    const task = tasks.find(task => task.id === id);
+    const task = tasks.find((task) => task.id === id);
     if (!task) return;
-    
+
     await updateTask(id, { completed: !task.completed });
   };
 
   const deleteTask = async (id) => {
     if (!user) return;
-    
+
     try {
       const taskRef = doc(db, "tasks", id);
       await deleteDoc(taskRef);
@@ -201,7 +207,9 @@ function App() {
   };
 
   const toggleTheme = () => {
-    setDarkMode(!darkMode);
+    const newTheme = !darkMode;
+    setDarkMode(newTheme);
+    localStorage.setItem("darkMode", JSON.stringify(newTheme));
   };
 
   const handleLogin = (userData) => {
@@ -213,7 +221,7 @@ function App() {
       await auth.signOut();
       setUser(null);
     } catch (error) {
-      console.error("Error signing out:", error);
+      console.error("Logout error:", error);
     }
   };
 
@@ -249,9 +257,9 @@ function App() {
 
   const clearCompleted = async () => {
     if (!user) return;
-    
-    const completedTasks = tasks.filter(task => task.completed);
-    
+
+    const completedTasks = tasks.filter((task) => task.completed);
+
     try {
       // Delete each completed task
       for (const task of completedTasks) {
@@ -264,13 +272,7 @@ function App() {
 
   // Show loading indicator while checking authentication
   if (loading) {
-    return (
-      <div className={`App ${darkMode ? "dark-mode" : ""}`}>
-        <div className="app-container">
-          <div className="loading-spinner">Loading...</div>
-        </div>
-      </div>
-    );
+    return <div className="loading-screen">Жүктелуде...</div>;
   }
 
   // If user is not logged in, show Auth component
@@ -285,43 +287,45 @@ function App() {
   }
 
   return (
-    <div className={`App ${darkMode ? "dark-mode" : ""}`}>
+    <div className={`app ${darkMode ? "dark-theme" : ""}`}>
       <div className="app-container">
-        <div className="app-header-bar">
-          <Header />
+        <header className="app-header">
+          <h1>Task Manager</h1>
           <div className="header-controls">
             <UserMenu user={user} onLogout={handleLogout} />
             <ThemeToggle darkMode={darkMode} toggleTheme={toggleTheme} />
           </div>
-        </div>
+        </header>
 
-        <div className="app-controls">
-          <TaskInput onAddTask={addTask} />
-          <SearchBar
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
+        <main className="app-content">
+          <div className="app-controls">
+            <TaskInput onAddTask={addTask} />
+            <SearchBar
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+            />
+          </div>
+          <FilterButtons
+            filter={filter}
+            setFilter={setFilter}
+            clearCompleted={clearCompleted}
+            completedCount={tasks.filter((task) => task.completed).length}
           />
-        </div>
-        <FilterButtons
-          filter={filter}
-          setFilter={setFilter}
-          clearCompleted={clearCompleted}
-          completedCount={tasks.filter((task) => task.completed).length}
-        />
-        <TaskList
-          tasks={getFilteredTasks()}
-          toggleCompletion={toggleCompletion}
-          deleteTask={deleteTask}
-          editTask={editTask}
-          isDeadlineApproaching={isDeadlineApproaching}
-        />
-        <div className="task-stats">
-          <p>
-            {tasks.length} total tasks |{" "}
-            {tasks.filter((task) => !task.completed).length} active |{" "}
-            {tasks.filter((task) => task.completed).length} completed
-          </p>
-        </div>
+          <TaskList
+            tasks={getFilteredTasks()}
+            toggleCompletion={toggleCompletion}
+            deleteTask={deleteTask}
+            editTask={editTask}
+            isDeadlineApproaching={isDeadlineApproaching}
+          />
+          <div className="task-stats">
+            <p>
+              {tasks.length} барлық тапсырмалар |{" "}
+              {tasks.filter((task) => !task.completed).length} белсенді |{" "}
+              {tasks.filter((task) => task.completed).length} аяқталған
+            </p>
+          </div>
+        </main>
       </div>
     </div>
   );

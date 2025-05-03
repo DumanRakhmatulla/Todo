@@ -15,7 +15,6 @@ function Login({ onLogin, onSwitchToRegister }) {
       [name]: value,
     });
 
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors({
         ...errors,
@@ -27,14 +26,13 @@ function Login({ onLogin, onSwitchToRegister }) {
   const validateForm = () => {
     const newErrors = {};
 
-    // Email validation
     if (!formData.email.trim()) {
-      newErrors.email = "Email міндетті";
+      newErrors.email = "Email is required";
     }
 
     // Password validation
     if (!formData.password) {
-      newErrors.password = "Құпия сөз міндетті";
+      newErrors.password = "Password is required";
     }
 
     setErrors(newErrors);
@@ -56,8 +54,8 @@ function Login({ onLogin, onSwitchToRegister }) {
   return (
     <div className="login-container">
       <div className="login-header">
-        <h2>Кіру</h2>
-        <p>Қолданбаға кіру үшін логин мен құпия сөзді енгізіңіз</p>
+        <h2>Login</h2>
+        <p>Enter your login and password to access the app</p>
       </div>
 
       <form className="login-form" onSubmit={handleSubmit}>
@@ -75,7 +73,7 @@ function Login({ onLogin, onSwitchToRegister }) {
         </div>
 
         <div className="form-group">
-          <label htmlFor="password">Құпия сөз</label>
+          <label htmlFor="password">Password</label>
           <input
             type="password"
             id="password"
@@ -92,23 +90,23 @@ function Login({ onLogin, onSwitchToRegister }) {
         <div className="remember-forgot">
           <div className="remember-me">
             <input type="checkbox" id="remember" />
-            <label htmlFor="remember">Мені есте сақта</label>
+            <label htmlFor="remember">Remember me</label>
           </div>
           <button type="button" className="forgot-password">
-            Құпия сөзді ұмыттыңыз ба?
+            Forgot password?
           </button>
         </div>
 
         <button type="submit" className="login-button">
-          Кіру
+          Login
         </button>
       </form>
 
       <div className="auth-switch">
         <p>
-          Аккаунтыңыз жоқ па?{" "}
+          Don't have an account?{" "}
           <button className="switch-button" onClick={onSwitchToRegister}>
-            Тіркелу
+            Register
           </button>
         </p>
       </div>

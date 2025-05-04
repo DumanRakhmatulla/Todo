@@ -131,7 +131,7 @@ function Register({ onRegister, onSwitchToLogin }) {
         </div>
 
         <button type="submit" className="register-button">
-          Тіркелу
+          Register
         </button>
       </form>
 

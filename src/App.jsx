@@ -121,23 +121,32 @@ function App() {
   const sendDeadlineNotification = async (task) => {
     try {
       console.log(`Sending deadline notification for task: ${task.text}`);
-
-      // In a real implementation, you would call a Cloud Function
-      // For example:
-      /*
-      await fetch("https://your-cloud-function-url.com/send-notification", {
+      
+      // Get the current user's ID token
+      const idToken = await auth.currentUser.getIdToken();
+      
+      // Call the notification server API
+      const response = await fetch("http://localhost:3001/send-notification", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${await auth.currentUser.getIdToken()}`
+          "Authorization": `Bearer ${idToken}`
         },
         body: JSON.stringify({
           taskId: task.id,
           taskText: task.text,
-          deadline: task.deadline
+          deadline: task.deadline,
+          recipientEmail: user.email // Send to the current user's email
         }),
       });
-      */
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || "Failed to send notification");
+      }
+      
+      console.log("Notification sent successfully", data);
     } catch (error) {
       console.error("Failed to send notification:", error);
     }

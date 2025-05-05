@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import "./App.css";
-import Header from "./components/Header";
 import TaskInput from "./components/TaskInput";
 import TaskList from "./components/TaskList";
 import FilterButtons from "./components/FilterButtons";
@@ -30,15 +29,12 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Проверка темы из localStorage и состояния аутентификации
   useEffect(() => {
-    // Проверка темы из localStorage
     const savedTheme = localStorage.getItem("darkMode");
     if (savedTheme) {
       setDarkMode(JSON.parse(savedTheme));
     }
 
-    // Проверка состояния аутентификации
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser({
@@ -57,13 +53,11 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  // Save theme preference to localStorage
   useEffect(() => {
     localStorage.setItem("darkMode", JSON.stringify(darkMode));
     document.body.className = darkMode ? "dark-theme" : "light-theme";
   }, [darkMode]);
 
-  // Subscribe to tasks from Firestore when user is authenticated
   useEffect(() => {
     if (!user) {
       setTasks([]);
@@ -84,7 +78,6 @@ function App() {
     return () => unsubscribe();
   }, [user]);
 
-  // Check for tasks with approaching deadlines
   useEffect(() => {
     if (!user || tasks.length === 0) return;
 
@@ -96,56 +89,48 @@ function App() {
           const deadlineDate = new Date(task.deadline);
           const timeRemaining = deadlineDate - now;
 
-          // If deadline is within 1 hour (3600000 ms)
           if (timeRemaining > 0 && timeRemaining <= 3600000) {
-            // Mark notification as sent
             updateTask(task.id, { notificationSent: true });
 
-            // Send notification (in a real app, this would connect to a backend)
             sendDeadlineNotification(task);
           }
         }
       });
     };
 
-    // Initial check
     checkDeadlines();
 
-    // Set interval to check deadlines every minute
     const intervalId = setInterval(checkDeadlines, 60000);
 
-    // Clean up interval on component unmount
     return () => clearInterval(intervalId);
   }, [tasks, user]);
 
   const sendDeadlineNotification = async (task) => {
     try {
       console.log(`Sending deadline notification for task: ${task.text}`);
-      
-      // Get the current user's ID token
+
       const idToken = await auth.currentUser.getIdToken();
-      
-      // Call the notification server API
+
       const response = await fetch("http://localhost:3001/send-notification", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${idToken}`
+          Authorization: `Bearer ${idToken}`,
         },
         body: JSON.stringify({
           taskId: task.id,
           taskText: task.text,
           deadline: task.deadline,
-          recipientEmail: user.email // Send to the current user's email
+          recipientEmail: user.email,
         }),
       });
-      
+
       const data = await response.json();
-      
+
       if (!data.success) {
         throw new Error(data.error || "Failed to send notification");
       }
-      
+
       console.log("Notification sent successfully", data);
     } catch (error) {
       console.error("Failed to send notification:", error);
@@ -182,7 +167,6 @@ function App() {
   };
 
   const editTask = async (id, newText, newPriority, newDeadline) => {
-    // Reset notification status if deadline changes
     const taskToUpdate = tasks.find((task) => task.id === id);
     const notificationSent =
       newDeadline !== taskToUpdate?.deadline
@@ -239,21 +223,18 @@ function App() {
     const now = new Date();
     const deadlineDate = new Date(deadline);
     const timeRemaining = deadlineDate - now;
-    return timeRemaining > 0 && timeRemaining <= 86400000; // 24 hours in milliseconds
+    return timeRemaining > 0 && timeRemaining <= 86400000;
   };
 
-  // Filter tasks based on current filter and search query
   const getFilteredTasks = () => {
     let filteredTasks = tasks;
 
-    // Apply filter (all, active, completed)
     if (filter === "active") {
       filteredTasks = filteredTasks.filter((task) => !task.completed);
     } else if (filter === "completed") {
       filteredTasks = filteredTasks.filter((task) => task.completed);
     }
 
-    // Apply search if there's a query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filteredTasks = filteredTasks.filter((task) =>
@@ -270,7 +251,6 @@ function App() {
     const completedTasks = tasks.filter((task) => task.completed);
 
     try {
-      // Delete each completed task
       for (const task of completedTasks) {
         await deleteTask(task.id);
       }
@@ -279,12 +259,10 @@ function App() {
     }
   };
 
-  // Show loading indicator while checking authentication
   if (loading) {
-    return <div className="loading-screen">Жүктелуде...</div>;
+    return <div className="loading-screen">Loading...</div>;
   }
 
-  // If user is not logged in, show Auth component
   if (!user) {
     return (
       <Auth
@@ -299,6 +277,7 @@ function App() {
     <div className={`app ${darkMode ? "dark-theme" : ""}`}>
       <div className="app-container">
         <header className="app-header">
+          <img src="/logo.png" alt="Logo" />
           <h1>Task Manager</h1>
           <div className="header-controls">
             <UserMenu user={user} onLogout={handleLogout} />
@@ -329,9 +308,9 @@ function App() {
           />
           <div className="task-stats">
             <p>
-              {tasks.length} барлық тапсырмалар |{" "}
-              {tasks.filter((task) => !task.completed).length} белсенді |{" "}
-              {tasks.filter((task) => task.completed).length} аяқталған
+              {tasks.length} total tasks |{" "}
+              {tasks.filter((task) => !task.completed).length} active |{" "}
+              {tasks.filter((task) => task.completed).length} completed
             </p>
           </div>
         </main>

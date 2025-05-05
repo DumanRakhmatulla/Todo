@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { 
-  createUserWithEmailAndPassword, 
+import {
+  createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
 } from "firebase/auth";
 import { auth } from "../../firebase/config";
 import ThemeToggle from "../ThemeToggle";
@@ -21,14 +21,18 @@ const Auth = ({ onLogin, darkMode, toggleTheme }) => {
     setLoading(true);
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
-      
+
       onLogin({
         uid: user.uid,
         email: user.email,
         displayName: user.displayName || email.split("@")[0],
-        photoURL: user.photoURL
+        photoURL: user.photoURL,
       });
     } catch (error) {
       console.error("Login error:", error);
@@ -43,14 +47,18 @@ const Auth = ({ onLogin, darkMode, toggleTheme }) => {
     setLoading(true);
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
-      
+
       onLogin({
         uid: user.uid,
         email: user.email,
         displayName: username || email.split("@")[0],
-        photoURL: user.photoURL
+        photoURL: user.photoURL,
       });
     } catch (error) {
       console.error("Registration error:", error);
@@ -63,17 +71,17 @@ const Auth = ({ onLogin, darkMode, toggleTheme }) => {
   const handleGoogleSignIn = async () => {
     setError("");
     setLoading(true);
-    
+
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      
+
       onLogin({
         uid: user.uid,
         email: user.email,
         displayName: user.displayName || user.email.split("@")[0],
-        photoURL: user.photoURL
+        photoURL: user.photoURL,
       });
     } catch (error) {
       console.error("Google Sign-in error:", error);
@@ -95,6 +103,7 @@ const Auth = ({ onLogin, darkMode, toggleTheme }) => {
 
   return (
     <div className={`auth-page ${darkMode ? "dark-theme" : ""}`}>
+      <ThemeToggle darkMode={darkMode} toggleTheme={toggleTheme} />
       <div className="auth-container">
         <div className="auth-logo">
           <img src="/logo.png" alt="Logo" />
@@ -103,15 +112,15 @@ const Auth = ({ onLogin, darkMode, toggleTheme }) => {
 
         <div className="auth-card">
           {error && <div className="error-message">{error}</div>}
-          
+
           {isRegister ? (
-            <Register 
-              onRegister={handleRegister} 
+            <Register
+              onRegister={handleRegister}
               onSwitchToLogin={switchToLogin}
             />
           ) : (
-            <Login 
-              onLogin={handleLogin} 
+            <Login
+              onLogin={handleLogin}
               onSwitchToRegister={switchToRegister}
             />
           )}
@@ -130,8 +139,7 @@ const Auth = ({ onLogin, darkMode, toggleTheme }) => {
         </button>
 
         <div className="auth-footer">
-          <ThemeToggle darkMode={darkMode} toggleTheme={toggleTheme} />
-          <p>© {new Date().getFullYear()} Task Manager. Барлық құқықтар қорғалған.</p>
+          <p>© {new Date().getFullYear()} Task Manager. All rights reserved.</p>
         </div>
       </div>
     </div>

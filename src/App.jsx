@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import "./App.css";
+import logo from "./assets/logo.png";
 import TaskInput from "./components/TaskInput";
 import TaskList from "./components/TaskList";
 import FilterButtons from "./components/FilterButtons";
@@ -277,7 +278,7 @@ function App() {
     <div className={`app ${darkMode ? "dark-theme" : ""}`}>
       <div className="app-container">
         <header className="app-header">
-          <img src="/logo.png" alt="Logo" />
+          <img src={logo} alt="Logo" />
           <h1>Task Manager</h1>
           <div className="header-controls">
             <UserMenu user={user} onLogout={handleLogout} />

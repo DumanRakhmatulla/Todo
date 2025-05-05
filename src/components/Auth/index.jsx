@@ -5,7 +5,9 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from "firebase/auth";
+
 import { auth } from "../../firebase/config";
+import logo from "../../assets/logo.png";
 import ThemeToggle from "../ThemeToggle";
 import Login from "../Login";
 import Register from "../Register";
@@ -106,7 +108,7 @@ const Auth = ({ onLogin, darkMode, toggleTheme }) => {
       <ThemeToggle darkMode={darkMode} toggleTheme={toggleTheme} />
       <div className="auth-container">
         <div className="auth-logo">
-          <img src="/logo.png" alt="Logo" />
+          <img src={logo} alt="Logo" />
           <h1>Task Manager</h1>
         </div>
 
